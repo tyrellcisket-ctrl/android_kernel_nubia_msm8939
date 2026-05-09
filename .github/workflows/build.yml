@@ -16,8 +16,8 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y gcc-9-aarch64-linux-gnu bc libssl-dev libelf-dev make python3 bison flex binutils-aarch64-linux-gnu
-
+        sudo apt-get install -y gcc-aarch64-linux-gnu bc libssl-dev libelf-dev make python3 bison flex binutils-aarch64-linux-gnu
+        
     - name: Fix build issues
       run: |
         sed -i 's/YYLTYPE yylloc/extern YYLTYPE yylloc/' scripts/dtc/dtc-lexer.lex.c_shipped
