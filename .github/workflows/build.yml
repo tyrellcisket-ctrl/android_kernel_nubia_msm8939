@@ -1,7 +1,7 @@
 name: Build NX513J Kernel
 
 on:
-  workflow_dispatch:  # 手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -9,7 +9,7 @@ jobs:
     
     steps:
     - name: Checkout kernel source
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 1
 
@@ -24,10 +24,8 @@ jobs:
 
     - name: Fix Python3 compatibility
       run: |
-        # 修复 gcc-wrapper.py
         sed -i 's/print "error, forbidden warning:", m.group(2)/print("error, forbidden warning:", m.group(2))/' scripts/gcc-wrapper.py
         sed -i '/for line in proc.stderr:/a\            line = line.decode("utf-8", errors="replace")' scripts/gcc-wrapper.py
-        # 修复 yylloc 多重定义 (GCC 10+)
         sed -i 's/YYLTYPE yylloc/extern YYLTYPE yylloc/' scripts/dtc/dtc-lexer.lex.c_shipped
 
     - name: Configure kernel
@@ -41,17 +39,16 @@ jobs:
         export ARCH=arm64
         export CROSS_COMPILE=aarch64-linux-gnu-
         make -j$(nproc) Image.gz-dtb 2>&1 | tee build.log
-        echo "Build exit code: $?"
 
     - name: Upload kernel image
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: kernel-Image.gz-dtb
         path: arch/arm64/boot/Image.gz-dtb
         if-no-files-found: warn
 
     - name: Upload build log
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: build-log
