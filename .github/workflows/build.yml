@@ -20,8 +20,10 @@ jobs:
 
     - name: Fix build issues
       run: |
-        printf '%s\n' '#!/usr/bin/env python3' 'import sys, subprocess' 'def main():' '    args = sys.argv[1:]' '    try:' '        proc = subprocess.Popen(args, stderr=subprocess.PIPE)' '        for line in proc.stderr:' '            line = line.decode("utf-8", errors="replace")' '            sys.stderr.write(line)' '        result = proc.wait()' '    except OSError as e:' '        result = e.errno' '    sys.exit(result)' 'main()' > scripts/gcc-wrapper.py
+        printf '%s\n' ... > scripts/gcc-wrapper.py
         sed -i 's/YYLTYPE yylloc/extern YYLTYPE yylloc/' scripts/dtc/dtc-lexer.lex.c_shipped
+        # 新加这一行，禁用缺头文件的电池驱动
+        sed -i 's/obj-$(CONFIG_BATTERY_BQ27520)/obj-n/' drivers/power/Makefile
 
     - name: Configure kernel
       run: |
