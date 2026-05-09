@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    
+
     steps:
     - name: Checkout kernel source
       uses: actions/checkout@v4
@@ -16,30 +16,13 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y \
-          gcc-aarch64-linux-gnu \
-          bc libssl-dev libelf-dev \
-          make python3 bison flex \
-          binutils-aarch64-linux-gnu
+        sudo apt-get install -y gcc-aarch64-linux-gnu bc libssl-dev libelf-dev make python3 bison flex binutils-aarch64-linux-gnu
 
-- name: Fix Python3 compatibility
+    - name: Fix build issues
       run: |
-        # 禁用forbidden warning检查，直接让gcc-wrapper透传
-        echo '#!/usr/bin/env python3
-import sys, os, subprocess, errno
-def main():
-    args = sys.argv[1:]
-    try:
-        proc = subprocess.Popen(args, stderr=subprocess.PIPE)
-        for line in proc.stderr:
-            line = line.decode("utf-8", errors="replace")
-            sys.stderr.write(line)
-        result = proc.wait()
-    except OSError as e:
-        result = e.errno
-    sys.exit(result)
-main()' > scripts/gcc-wrapper.py
+        printf '%s\n' '#!/usr/bin/env python3' 'import sys, subprocess' 'def main():' '    args = sys.argv[1:]' '    try:' '        proc = subprocess.Popen(args, stderr=subprocess.PIPE)' '        for line in proc.stderr:' '            line = line.decode("utf-8", errors="replace")' '            sys.stderr.write(line)' '        result = proc.wait()' '    except OSError as e:' '        result = e.errno' '    sys.exit(result)' 'main()' > scripts/gcc-wrapper.py
         sed -i 's/YYLTYPE yylloc/extern YYLTYPE yylloc/' scripts/dtc/dtc-lexer.lex.c_shipped
+
     - name: Configure kernel
       run: |
         export ARCH=arm64
